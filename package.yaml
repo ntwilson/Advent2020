@@ -1,0 +1,63 @@
+name: Advent2020
+version: '0.0.0.0'
+synopsis: See README for more info
+description: See README for more info
+category: Puzzles
+author: nathan wilson
+maintainer: nathan wilson <ntwilson@gmail.com>
+copyright: 2020 nathan wilson
+license: MIT
+
+extra-source-files:
+- README.md
+
+dependencies:
+- base ^>= 4.13.0.0
+- relude
+- directory
+
+default-extensions: 
+- NoImplicitPrelude
+- OverloadedStrings
+- PatternSynonyms
+- ViewPatterns
+- NumericUnderscores
+  
+ghc-options:
+- -Wall
+- -Werror
+
+library:
+  source-dirs: src
+executables:
+  Advent2020:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - Advent2020
+tests:
+  Advent2020-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - Advent2020
+benchmarks:
+  Advent2020-benchmark:
+    main: Main.hs
+    source-dirs: benchmark
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - gauge
+    - Advent2020
+tested-with: ghc ==8.8.3
