@@ -14,7 +14,6 @@ extra-source-files:
 dependencies:
 - base ^>= 4.13.0.0
 - relude
-- directory
 
 default-extensions: 
 - NoImplicitPrelude
@@ -22,6 +21,7 @@ default-extensions:
 - PatternSynonyms
 - ViewPatterns
 - NumericUnderscores
+- NamedFieldPuns
   
 ghc-options:
 - -Wall
@@ -29,6 +29,11 @@ ghc-options:
 
 library:
   source-dirs: src
+  dependencies:
+  - directory
+  - megaparsec
+  - text
+
 executables:
   Advent2020:
     main: Main.hs
@@ -39,6 +44,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - Advent2020
+
 tests:
   Advent2020-test:
     main: Spec.hs
@@ -49,6 +55,7 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - Advent2020
+
 benchmarks:
   Advent2020-benchmark:
     main: Main.hs
@@ -60,4 +67,5 @@ benchmarks:
     dependencies:
     - gauge
     - Advent2020
+
 tested-with: ghc ==8.8.3
