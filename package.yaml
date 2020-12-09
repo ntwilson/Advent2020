@@ -22,6 +22,7 @@ default-extensions:
 - ViewPatterns
 - NumericUnderscores
 - NamedFieldPuns
+- FlexibleContexts
   
 ghc-options:
 - -Wall
@@ -33,6 +34,7 @@ library:
   - directory
   - megaparsec
   - text
+  - mtl
 
 executables:
   Advent2020:
