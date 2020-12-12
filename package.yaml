@@ -26,7 +26,6 @@ default-extensions:
   
 ghc-options:
 - -Wall
-- -Werror
 
 library:
   source-dirs: src
@@ -35,6 +34,7 @@ library:
   - megaparsec
   - text
   - mtl
+  - containers
 
 executables:
   Advent2020:
