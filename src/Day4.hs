@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 module Day4 where 
 
 import Relude
@@ -26,15 +27,34 @@ parsePassportEntries = Parsec.many atMostOneEol
     atLeastTwoEol = Parsec.try (Parsec.eol *> Parsec.eol $> ())
     onlyWhitespaceLeft = Parsec.try (Parsec.space *> Parsec.eof)
 
-parseAllPassports :: Parser Passport -> [Text] -> [Passport]
-parseAllPassports parsePassport = mapMaybe (Parsec.parseMaybe parsePassport)
+fieldsToPassport :: [PassportField] -> Maybe Passport
+fieldsToPassport passportVals = do
+  birthYear <- viaNonEmpty head $ mapMaybe (\case { BirthYear yr -> Just yr; _ -> Nothing }) passportVals
+  issueYear <- viaNonEmpty head $ mapMaybe (\case { IssueYear x -> Just x; _ -> Nothing }) passportVals
+  expirationYear <- viaNonEmpty head $ mapMaybe (\case { ExpirationYear x -> Just x; _ -> Nothing }) passportVals
+  height <- viaNonEmpty head $ mapMaybe (\case { Height x -> Just x; _ -> Nothing }) passportVals
+  hairColor <- viaNonEmpty head $ mapMaybe (\case { HairColor x -> Just x; _ -> Nothing }) passportVals
+  eyeColor <- viaNonEmpty head $ mapMaybe (\case { EyeColor x -> Just x; _ -> Nothing }) passportVals
+  passportID <- viaNonEmpty head $ mapMaybe (\case { PassportID x -> Just x; _ -> Nothing }) passportVals
+  let countryID = viaNonEmpty head $ mapMaybe (\case { CountryID x -> Just x; _ -> Nothing }) passportVals
+  pure $ Passport { birthYear, issueYear, expirationYear, height, hairColor, eyeColor, passportID, countryID }
+
+parsePassport :: Parser PassportField -> Parser Passport
+parsePassport parseKeyValue = do
+  keysNVals <- Parsec.sepBy parseKeyValue Parsec.spaceChar
+  case fieldsToPassport keysNVals of 
+    Just ppt -> pure ppt
+    Nothing -> fail "Could not build a passport out of the given keys and values"
+
+parseAllPassports :: Parser PassportField -> [Text] -> [Passport]
+parseAllPassports parseKeyValue = mapMaybe (Parsec.parseMaybe (parsePassport parseKeyValue))
 
 contents :: IO Text
 contents = readFileText "./puzzle4.txt"
 
-passports :: Parser Passport -> IO [Passport]
-passports parsePassport = do
+passports :: Parser PassportField -> IO [Passport]
+passports parseKeyValue = do
   fileContents <- contents
   case Parsec.runParser parsePassportEntries "puzzle4.txt" fileContents of
     Left err -> error $ toText $ Parsec.errorBundlePretty err
-    Right passportEntries -> pure $ parseAllPassports parsePassport passportEntries
+    Right passportEntries -> pure $ parseAllPassports parseKeyValue passportEntries

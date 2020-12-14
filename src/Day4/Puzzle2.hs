@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 module Day4.Puzzle2 where
 
 import Relude
@@ -10,7 +9,7 @@ import qualified Text.Megaparsec.Char as Parsec
 import qualified Text.Megaparsec.Char.Lexer as Lexer
 
 ans :: IO Int
-ans = length <$> passports parsePassport
+ans = length <$> passports parseKeyValue
 
 satisfies :: Show a => (a -> Bool) -> Parser a -> Parser a
 satisfies fn p = Parsec.try $ do
@@ -76,24 +75,3 @@ parseKeyValue = Parsec.try $
     [ parseBirthYear, parseIssueYear, parseExpirationYear, parseHeight 
     , parseHairColor, parseEyeColor, parsePassportID, parseCountryID 
     ]
-
-fieldsToPassport :: [PassportField] -> Maybe Passport
-fieldsToPassport passportVals = do
-  birthYear <- viaNonEmpty head $ mapMaybe (\case { BirthYear yr -> Just yr; _ -> Nothing }) passportVals
-  issueYear <- viaNonEmpty head $ mapMaybe (\case { IssueYear x -> Just x; _ -> Nothing }) passportVals
-  expirationYear <- viaNonEmpty head $ mapMaybe (\case { ExpirationYear x -> Just x; _ -> Nothing }) passportVals
-  height <- viaNonEmpty head $ mapMaybe (\case { Height x -> Just x; _ -> Nothing }) passportVals
-  hairColor <- viaNonEmpty head $ mapMaybe (\case { HairColor x -> Just x; _ -> Nothing }) passportVals
-  eyeColor <- viaNonEmpty head $ mapMaybe (\case { EyeColor x -> Just x; _ -> Nothing }) passportVals
-  passportID <- viaNonEmpty head $ mapMaybe (\case { PassportID x -> Just x; _ -> Nothing }) passportVals
-  let countryID = viaNonEmpty head $ mapMaybe (\case { CountryID x -> Just x; _ -> Nothing }) passportVals
-  pure $ Passport { birthYear, issueYear, expirationYear, height, hairColor, eyeColor, passportID, countryID }
-
-
-parsePassport :: Parser Passport
-parsePassport = do
-  -- consumes the first newline at the end of a passport entry
-  keysNVals <- Parsec.sepEndBy parseKeyValue Parsec.spaceChar
-  case fieldsToPassport keysNVals of 
-    Just ppt -> pure ppt
-    Nothing -> fail "Could not build a passport out of the given keys and values"
