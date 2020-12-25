@@ -6,9 +6,8 @@ import qualified Data.Map as Map
 
 
 ans :: IO Int
-ans = numBagsContainedBy "shiny gold" <$> policies 
+ans = sum . Map.elems . bagsContainedBy "shiny gold" <$> policies 
 
--- this is tail recursive, but produces the wrong answer and I haven't found the bug yet 
 bagsContainedBy :: Text -> [BagPolicy] -> Map Text Int
 bagsContainedBy c bagPolicies = execState (go 1 c) Map.empty
   where
@@ -19,9 +18,11 @@ bagsContainedBy c bagPolicies = execState (go 1 c) Map.empty
         Just policy -> 
           for_ (contents policy) $ \content -> do
             colorsSoFar <- get
-            let countOfThisColor = (count content * multiplier) + (Map.lookup (hue content) colorsSoFar & fromMaybe 0)
+            let 
+              countOfThisParticularBag = count content * multiplier
+              countOfThisColor = countOfThisParticularBag + (Map.lookup (hue content) colorsSoFar & fromMaybe 0)
             modify $ Map.insert (hue content) countOfThisColor
-            go countOfThisColor (hue content)
+            go countOfThisParticularBag (hue content)
 
 
 numBagsContainedBy :: Text -> [BagPolicy] -> Int
