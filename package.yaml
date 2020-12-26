@@ -24,6 +24,7 @@ default-extensions:
 - NamedFieldPuns
 - FlexibleContexts
 - LambdaCase
+- PartialTypeSignatures
   
 ghc-options:
 - -Wall
