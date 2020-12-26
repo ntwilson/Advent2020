@@ -23,6 +23,7 @@ default-extensions:
 - NumericUnderscores
 - NamedFieldPuns
 - FlexibleContexts
+- LambdaCase
   
 ghc-options:
 - -Wall
@@ -35,6 +36,7 @@ library:
   - text
   - mtl
   - containers
+  - array
 
 executables:
   Advent2020:
