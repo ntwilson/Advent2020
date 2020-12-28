@@ -38,6 +38,7 @@ library:
   - mtl
   - containers
   - array
+  - lens
 
 executables:
   Advent2020:
