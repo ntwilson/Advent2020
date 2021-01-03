@@ -32,7 +32,7 @@ visible plan row col =
     [ [Just plan !? (row - a) !? col       | a <- [1..]] -- ^
     , [Just plan !? (row - a) !? (col + a) | a <- [1..]] -- ^>
     , [Just plan !? row !? (col + a)       | a <- [1..]] -- >
-    , [Just plan !? (row + a) !? (col + a) | a <- [1..]]-- v>
+    , [Just plan !? (row + a) !? (col + a) | a <- [1..]] -- v>
     , [Just plan !? (row + a) !? col       | a <- [1..]] -- v
     , [Just plan !? (row + a) !? (col - a) | a <- [1..]] -- <v
     , [Just plan !? row !? (col - a)       | a <- [1..]] -- <
