@@ -1,12 +1,12 @@
 module Day8 where
 
 import Relude
+import AoCArray
 import qualified Prelude
 import Data.Array (Array, listArray)
 import qualified Text.Megaparsec as Parsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as Lexer
-import qualified Data.Array as Array
 import qualified Data.Set as Set
 
 data Instruction 
@@ -82,8 +82,3 @@ eval prog st =
       { programCounter = programCounter st + 1
       , instructionsEvaluated = Set.insert (programCounter st) (instructionsEvaluated st)
       }
-
-(!) :: Array.Ix i => Array.Array i e -> i -> Maybe e
-ar ! i =
-  let (lbound, ubound) = Array.bounds ar
-  in if lbound <= i && i <= ubound then Just ((Array.!) ar i) else Nothing 

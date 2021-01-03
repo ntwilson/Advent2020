@@ -1,8 +1,9 @@
 module Day10.Puzzle2 where
 
 import Relude
-import qualified Prelude
 import Operators
+import AoCArray
+import qualified Prelude
 import qualified Control.Monad.Except as Except
 import Relude.Extra.Foldable1
 import qualified Data.Array as Array
@@ -19,11 +20,6 @@ fileContents = do
   case viaNonEmpty maximum1 contents of
     Nothing -> pure [0]
     Just m -> pure (0 : m + 3 : contents)
-
-(!) :: Array.Ix i => Array.Array i e -> i -> Maybe e
-ar ! i =
-  let (lbound, ubound) = Array.bounds ar
-  in if lbound <= i && i <= ubound then Just ((Array.!) ar i) else Nothing 
 
 solution :: [Int64] -> Int64
 solution inputs = solutionsStartingAt 0

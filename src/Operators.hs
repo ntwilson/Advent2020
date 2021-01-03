@@ -8,4 +8,13 @@ infixl 4 <$$>
 
 (<&&>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
 (<&&>) = flip (<$$>)
-infixl 4 <&&>
+infixr 4 <&&>
+
+(<<$) :: Functor f => (a -> b) -> (c -> f a) -> c -> f b
+f1 <<$ f2 = fmap f1 . f2
+infixl 4 <<$
+
+(&>>) :: Functor f => (a -> f b) -> (b -> c) -> a -> f c
+(&>>) = flip (<<$)
+infixr 4 &>>
+

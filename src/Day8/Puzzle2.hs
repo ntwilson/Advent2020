@@ -1,6 +1,7 @@
 module Day8.Puzzle2 where
 
 import Relude
+import AoCArray
 import qualified Prelude
 import Day8
 import Data.Array ((//))
