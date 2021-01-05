@@ -26,18 +26,18 @@ parseInput txt =
 fileContents :: IO [Maybe Int]
 fileContents = liftEitherMessage . parseInput =<< readFileText "./puzzle13.txt"
 
-solution :: [Maybe Int] -> Maybe Int 
-solution busIDs = find isValid proposedSolutions
+solutionSlow :: [Maybe Int] -> Maybe Int 
+solutionSlow busIDs = find isValid proposedSolutions
   where
-    isValid time = foldl' (&&) True $ imap (isThisBusValid time) busIDs
-    isThisBusValid time index (Just busID) = ((index + time) `mod` busID) == 0
-    isThisBusValid _ _ Nothing = True
+    busesToCheck = sortOn negate $ catMaybes busIDs
+    isValid time = all id $ imap (isThisBusValid time) busesToCheck
+    isThisBusValid time index busID = ((index + time) `mod` busID) == 0
 
     proposedSolutions = 
       case maxBy snd busesByIndex of 
         Nothing -> []
         Just (i, busID) -> 
-          [ x - i | x <- (busID *) <$> [1 .. 1_000_000_000] ] 
+          [ x - i | x <- (busID *) <$> [10_000_000_000 .. 100_000_000_000] ] 
 
     busesByIndex = 
       mapMaybe (\case { (_i, Nothing) -> Nothing; (i, Just x) -> Just (i, x) }) $ itoList busIDs 
@@ -49,6 +49,25 @@ solution busIDs = find isValid proposedSolutions
           | fn x > y = go (Just (fn x, x)) xs
           | otherwise = go (Just (y, a)) xs
         go a [] = snd <$> a
+
+-- Got stumped.  Had to copy the strategy from https://github.com/mstksg/advent-of-code-2020/blob/master/reflections.md#day-13
+solution :: [Maybe Int] -> Maybe Int 
+solution busIDs =
+  fst $
+    foldl' 
+      (\(minSolution, step) (nextIndex, nextBusID) -> 
+        let 
+          newMin = case minSolution of 
+            Nothing -> Nothing 
+            Just s -> [s, s + step .. s + (100_000 * step)] & find (\a -> (a + nextIndex) `mod` nextBusID == 0)
+          newStep = step * nextBusID
+        in (newMin, newStep))
+      (Just 1, 1)
+      (sortBy (comparing (negate . snd)) busesByIndex)
+
+  where 
+    busesByIndex = 
+      mapMaybe (\case { (_i, Nothing) -> Nothing; (i, Just x) -> Just (i, x) }) $ itoList busIDs 
 
 ans :: IO Int
 ans = do 
