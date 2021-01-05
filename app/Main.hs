@@ -25,6 +25,8 @@ import qualified Day11.Puzzle1 as D11P1
 import qualified Day11.Puzzle2 as D11P2
 import qualified Day12.Puzzle1 as D12P1
 import qualified Day12.Puzzle2 as D12P2
+import qualified Day13.Puzzle1 as D13P1
+import qualified Day13.Puzzle2 as D13P2
 
 
 main :: IO ()
@@ -100,3 +102,9 @@ main = do
   putTextLn ("  #1: " <> show d12q1)
   d12q2 <- D12P2.ans
   putTextLn ("  #2: " <> show d12q2)
+
+  putTextLn "-------------\nDay13:"
+  d13q1 <- D13P1.ans
+  putTextLn ("  #1: " <> show d13q1)
+  d13q2 <- D13P2.ans
+  putTextLn ("  #2: " <> show d13q2)
