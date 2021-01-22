@@ -1,4 +1,4 @@
-module Day14.Puzzle1 where
+module Day14.Puzzle2 where
 
 import Relude
 import Text.Megaparsec (choice, Parsec)
@@ -10,7 +10,7 @@ import qualified Numeric as Int
 import Data.Char (digitToInt, intToDigit)
 import qualified Data.IntMap.Strict as Map
 
-data MaskBit = Zero | One | NoUpdate deriving (Show, Eq)
+data MaskBit = Floating | One | NoUpdate deriving (Show, Eq)
 type Mask = [] MaskBit
 
 data Instruction 
@@ -25,7 +25,7 @@ data ProgramState = ProgramState { memory :: IntMap Int, currentMask :: Mask }
 reducer :: ProgramState -> Instruction -> ProgramState 
 reducer st (SetMask mask) = st { currentMask = mask }
 reducer st@ProgramState{currentMask, memory} SetValue{address, value} = 
-  st { memory = Map.insert address (applyMask currentMask value) memory }
+  st { memory = applyMask currentMask address & foldl' (\mem addrs -> Map.insert addrs value mem) memory }
 
 execute :: ProgramState -> Program -> ProgramState
 execute = foldl' reducer 
@@ -36,16 +36,17 @@ showBinary i = Int.showIntAtBase 2 intToDigit i ""
 readBinary :: String -> Maybe Int
 readBinary i = Int.readInt 2 (`elem` ['0','1']) digitToInt i & listToMaybe <&> fst 
 
-applyMask :: Mask -> Int -> Int
-applyMask mask i = readBinary updatedBinary & fromMaybe i
+applyMask :: Mask -> Int -> [Int]
+applyMask mask i = fromMaybe i . readBinary <$> updatedBinaries
   where 
-    updatedBinary = zipWithRight updateChar binary mask 
+    updatedBinaries :: [String]
+    updatedBinaries = sequence $ zipWithRight updateChar binary mask 
 
     binary = ['0' | _ <- [1 .. 100]] <> Int.showIntAtBase 2 intToDigit i "" 
 
-    updateChar _digit Zero = '0'
-    updateChar _digit One = '1'
-    updateChar digit NoUpdate = digit
+    updateChar _digit Floating = ['0', '1']
+    updateChar _digit One = ['1']
+    updateChar digit NoUpdate = [digit]
 
 zipWithRight :: (a -> b -> c) -> [a] -> [b] -> [c]
 zipWithRight f xs ys = reverse $ zipWith f (reverse xs) (reverse ys)
@@ -69,8 +70,8 @@ parseLine =
 
     parseMaskChar = do 
       choice 
-        [ char' 'X' $> NoUpdate
-        , char' '0' $> Zero
+        [ char' 'X' $> Floating
+        , char' '0' $> NoUpdate
         , char' '1' $> One
         ]
 
