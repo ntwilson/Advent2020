@@ -17,11 +17,13 @@ iter GameState{ history, currentTurn } lastRound = (GameState { history = newHis
     newHistory = Map.insert lastRound currentTurn history
     roundValue = ((currentTurn -) <$> Map.lookup lastRound history) & fromMaybe 0
 
-ithNumber :: Int -> [Int] -> Maybe (GameState, Int)
-ithNumber i input = turns !!? (i - length input)
-  where 
-    turns = [0..] & scanl (\(st, x) _ -> iter st x) (processedInput, viaNonEmpty last input & fromMaybe 0) 
-    processedInput = processInput input
+ithNumber :: Int -> [Int] -> Int
+ithNumber i input = go (i - length input) (processInput input, viaNonEmpty last input & fromMaybe 0)
+  where
+    go turnsLeft (st, lastRound)
+      | turnsLeft <= 0 = lastRound
+      | otherwise = go (turnsLeft - 1) (iter st lastRound)
 
-ans :: Maybe Int
-ans = ithNumber 2020 puzzleInput <&> snd
+
+ans :: Int
+ans = ithNumber 2020 puzzleInput 

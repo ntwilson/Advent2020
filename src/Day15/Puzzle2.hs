@@ -1,64 +1,55 @@
-{-# LANGUAGE BangPatterns #-}
-
 module Day15.Puzzle2 where
 
 import Relude 
-import qualified Data.IntMap.Strict as Map
-import Data.HashTable.ST.Basic (HashTable)
-import qualified Data.HashTable.ST.Basic as Table
 import Control.Monad.ST (runST, ST)
-import Data.STRef (modifySTRef, readSTRef, newSTRef, STRef)
+import Data.STRef (writeSTRef, modifySTRef, readSTRef, newSTRef, STRef)
+import qualified Data.Array.MArray as Array
+import Data.Array.Base (newArray, STUArray)
+import Data.List (maximum)
 
 puzzleInput :: [Int]
 puzzleInput = [8,0,17,4,1,12]
 
-data GameState = GameState { history :: IntMap Int, currentTurn :: Int } deriving (Show)
-data GameState' s = GameState' { history' :: HashTable s Int Int, currentTurn' :: STRef s Int } 
+data GameState s = GameState { history :: STUArray s Int Int, currentTurn :: STRef s Int, lastRound :: STRef s Int } 
 
-processInput :: [Int] -> GameState
-processInput input = GameState { history = Map.fromList $ zip input [0..], currentTurn = length input - 1 }
-
-processInput' :: [Int] -> ST s (GameState' s)
-processInput' input = do
-  history' <- newFromList $ zip input [0..]
-  currentTurn' <- newSTRef $ length input - 1
-  pure $ GameState' { history', currentTurn' }
+processInput :: Int -> [Int] -> ST s (GameState s)
+processInput size input = do
+  history <- newFromList $ zip input [0..]
+  currentTurn <- newSTRef $ length input - 1
+  lastRound <- newSTRef (viaNonEmpty last input & fromMaybe 0)
+  pure $ GameState { history, currentTurn, lastRound }
   where
+    newFromList :: [(Int, Int)] -> ST s (STUArray s Int Int)
     newFromList xs = do
-      hs <- Table.new
-      for_ xs (uncurry $ Table.insert hs) 
-      pure hs
+      let computedSize = max (size - 1) (maximum input)
+      ar <- newArray (0, computedSize) (-1)
+      for_ xs (uncurry $ Array.writeArray ar)
+      pure ar
 
-iter :: GameState -> Int -> (GameState, Int) 
-iter GameState{ history, currentTurn } lastRound = (GameState { history = newHistory, currentTurn = currentTurn + 1 }, roundValue)
-  where 
-    newHistory = Map.insert lastRound currentTurn history
-    roundValue = ((currentTurn -) <$> Map.lookup lastRound history) & fromMaybe 0
-
-iter' :: GameState' s -> Int -> ST s Int 
-iter' GameState'{ history', currentTurn' } lastRound = do 
-  currentTurnVal <- readSTRef currentTurn'
-  lastTurnUsed <- Table.lookup history' lastRound
-  Table.insert history' lastRound currentTurnVal
+iter :: GameState s -> ST s () 
+iter GameState{ history, currentTurn, lastRound } = do 
+  currentTurnVal <- readSTRef currentTurn
+  lastRoundVal <- readSTRef lastRound
+  lastTurnUsed <- tryReadArray history lastRoundVal
+  Array.writeArray history lastRoundVal currentTurnVal
   let roundValue = ((currentTurnVal -) <$> lastTurnUsed) & fromMaybe 0
-  _ <- modifySTRef currentTurn' (+1)
-  pure roundValue
+  _ <- modifySTRef currentTurn (+1)
+  _ <- writeSTRef lastRound roundValue
+  pure ()
+  where
+    tryReadArray ar i = do
+      bounds <- Array.getBounds ar
+      if Array.inRange bounds i
+      then do
+        x <- Array.readArray ar i
+        if x == -1 then pure Nothing else pure (Just x)
+      else pure Nothing
 
 ithNumber :: Int -> [Int] -> Int
-ithNumber i input = go (i - length input) (processInput input, viaNonEmpty last input & fromMaybe 0)
-  where
-    go !turnsLeft (!st, !lastRound)
-      | turnsLeft <= 0 = lastRound
-      | otherwise = go (turnsLeft - 1) (iter st lastRound)
-
-ithNumber' :: Int -> [Int] -> ST s Int
-ithNumber' i unprocessedInput = do
-  input <- processInput' unprocessedInput
-  go input (i - length unprocessedInput) (viaNonEmpty last unprocessedInput & fromMaybe 0)
-  where
-    go input turnsLeft lastRound
-      | turnsLeft <= 0 = pure lastRound
-      | otherwise = go input (turnsLeft - 1) =<< iter' input lastRound
+ithNumber i unprocessedInput = runST $ do
+  input <- processInput i unprocessedInput
+  for_ [1 .. i - length unprocessedInput] $ const $ iter input 
+  readSTRef $ lastRound input
 
 ans :: Int
-ans = runST $ ithNumber' 30000000 puzzleInput
+ans = ithNumber 30000000 puzzleInput
