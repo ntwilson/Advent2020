@@ -30,6 +30,7 @@ import qualified Day13.Puzzle2 as D13P2
 import qualified Day14.Puzzle1 as D14P1
 import qualified Day14.Puzzle2 as D14P2
 import qualified Day15.Puzzle1 as D15P1
+import qualified Day15.Puzzle2 as D15P2
 
 
 main :: IO ()
@@ -121,3 +122,5 @@ main = do
   putTextLn "-------------\nDay15:"
   let d15q1 = D15P1.ans
   putTextLn ("  #1: " <> show d15q1)
+  let d15q2 = D15P2.ans
+  putTextLn ("  #2: " <> show d15q2)
