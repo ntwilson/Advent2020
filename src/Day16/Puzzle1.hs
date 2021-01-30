@@ -41,18 +41,17 @@ parseField = do
 parseTicket :: Parser [Int]
 parseTicket = Parsec.sepBy1 Lexer.decimal (char' ',')
 
--- parseContents :: Parser Contents 
+parseContents :: Parser Contents 
 parseContents = do
   fields <- parseFields
   _ <- some (void spaceChar <|> void (string' "your ticket:"))
   yourTicket <- parseTicket
   _ <- some (void spaceChar <|> void (string' "nearby tickets:"))
   nearbyTickets <- Parsec.sepEndBy parseTicket space1
-  pure (fields, yourTicket, nearbyTickets)
 
-  -- pure $ Contents {fields, yourTicket, nearbyTickets}
+  pure $ Contents {fields, yourTicket, nearbyTickets}
 
--- fileContents :: IO Contents 
+fileContents :: IO Contents 
 fileContents = do
   contents <- readFileText "./puzzle16.txt"
   liftEitherMessage $ Parsec.runParser parseContents "puzzle16.txt" contents
